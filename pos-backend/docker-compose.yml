@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  # 1. Database Container එක
+  mysql-db:
+    image: mysql:8.0
+    container_name: pos_mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: pos_system
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  # 2. Backend Container එක (අපි කලින් හදපු එක)
+  pos-backend:
+    build: .
+    container_name: pos_backend_app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql-db
+    environment:
+      # දැන් host.docker.internal නෙවෙයි, කෙලින්ම අර උඩ තියෙන 'mysql-db' කියන නමෙන්ම කතා කරනවා
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/pos_system?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+
+# Database එකේ සේව් වෙන දේවල් පෙට්ටිය මැකුවත් මැකෙන්නේ නැති වෙන්න එළියෙන් සේව් කරගන්නවා
+volumes:
+  db_data:
